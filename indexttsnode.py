@@ -49,6 +49,8 @@ speakers_dir = os.path.join(models_dir, "TTS", "speakers")
 
 if torch.cuda.is_available():
     device = "cuda"
+elif torch.xpu.is_available():
+    device = "xpu"
 elif hasattr(torch, "mps") and torch.backends.mps.is_available():
     device = "mps"
 else:
@@ -150,6 +152,10 @@ class IndexTTS2:
             self.device = "cuda:0"
             self.is_fp16 = is_fp16
             self.use_cuda_kernel = use_cuda_kernel is None or use_cuda_kernel
+        elif torch.xpu.is_available():
+            self.device = "xpu"
+            self.is_fp16 = is_fp16
+            self.use_cuda_kernel = False  # Custom CUDA kernels are not compatible with XPU
         elif hasattr(torch, "mps") and torch.backends.mps.is_available():
             self.device = "mps"
             self.is_fp16 = False  # Use float16 on MPS is overhead than float32
@@ -308,6 +314,8 @@ class IndexTTS2:
         try:
             if "cuda" in str(self.device):
                 torch.cuda.empty_cache()
+            elif "xpu" in str(self.device):
+                torch.xpu.empty_cache()
             elif "mps" in str(self.device):
                 torch.mps.empty_cache()
         except Exception as e:
@@ -813,6 +821,10 @@ class IndexTTS:
             self.device = "cuda:0"
             self.is_fp16 = is_fp16
             self.use_cuda_kernel = use_cuda_kernel is None or use_cuda_kernel
+        elif torch.xpu.is_available():
+            self.device = "xpu"
+            self.is_fp16 = is_fp16
+            self.use_cuda_kernel = False
         elif hasattr(torch, "mps") and torch.backends.mps.is_available():
             self.device = "mps"
             self.is_fp16 = False # Use float16 on MPS is overhead than float32
@@ -1044,6 +1056,8 @@ class IndexTTS:
         try:
             if "cuda" in str(self.device):
                 torch.cuda.empty_cache()
+            elif "xpu" in str(self.device):
+                torch.xpu.empty_cache()
             elif "mps" in str(self.device):
                 torch.mps.empty_cache()
         except Exception as e:
